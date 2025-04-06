@@ -199,8 +199,12 @@
         </footer>
     </div>
 
-    <script src="src/index.js"></script>
+    <!-- 替换原有的脚本导入 -->
+    <script src="https://cdn.jsdelivr.net/npm/@ozdemirburak/morse-code-translator@1.0.0/dist/morse-code-translator.min.js"></script>
     <script>
+        // 确保库正确加载到全局变量
+        window['morse-code-translator'] = morse;
+        
         // 获取DOM元素
         const textInput = document.getElementById('textInput');
         const morseInput = document.getElementById('morseInput');

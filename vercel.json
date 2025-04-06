@@ -2,10 +2,13 @@
   "version": 2,
   "builds": [
     { "src": "*.html", "use": "@vercel/static" },
+    { "src": "src/**", "use": "@vercel/static" },
     { "src": "server.js", "use": "@vercel/node" }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "/server.js" },
+    { "src": "/encode", "dest": "/server.js" },
+    { "src": "/decode", "dest": "/server.js" },
+    { "src": "/characters", "dest": "/server.js" },
     { "src": "/(.*)", "dest": "/" }
   ]
 }
