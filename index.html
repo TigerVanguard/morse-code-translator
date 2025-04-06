@@ -199,11 +199,52 @@
         </footer>
     </div>
 
-    <!-- Replace the broken CDN link with a working one -->
-    <script src="https://cdn.jsdelivr.net/npm/@ozdemirburak/morse-code-translator/dist/morse-code-translator.min.js"></script>
+    <!-- Update the script imports -->
     <script>
-        // Ensure library is correctly loaded to global variable
-        window['morse-code-translator'] = morse;
+        // Create a placeholder for the morse library
+        window['morse-code-translator'] = {
+            encode: function(text, options) {
+                return fetch(`/encode?text=${encodeURIComponent(text)}`)
+                    .then(response => response.json())
+                    .then(data => data.result);
+            },
+            decode: function(morse, options) {
+                return fetch(`/decode?morse=${encodeURIComponent(morse)}`)
+                    .then(response => response.json())
+                    .then(data => data.result);
+            },
+            characters: function(options, usePriority) {
+                return fetch('/characters')
+                    .then(response => response.json())
+                    .then(data => data.result);
+            },
+            audio: function(text, options) {
+                // Basic audio implementation
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = ctx.createOscillator();
+                const gainNode = ctx.createGain();
+                
+                oscillator.type = options.oscillator.type || 'sine';
+                oscillator.frequency.value = options.oscillator.frequency || 600;
+                gainNode.gain.value = options.volume / 100 || 0.8;
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(ctx.destination);
+                
+                return {
+                    oscillator: oscillator,
+                    play: function() {
+                        oscillator.start();
+                    },
+                    stop: function() {
+                        oscillator.stop();
+                    },
+                    exportWave: function(filename) {
+                        alert('音频导出功能在此版本中不可用');
+                    }
+                };
+            }
+        };
         
         // 获取DOM元素
         const textInput = document.getElementById('textInput');
@@ -225,7 +266,7 @@
         
         let audioPlayer = null;
         
-        // 获取选项 - 重命名函数以避免冲突
+        // 获取选项
         function getAudioOptions() {
             return {
                 wpm: parseInt(wpmInput.value),
@@ -245,8 +286,13 @@
                 return;
             }
             
-            const morse = window['morse-code-translator'].encode(text);
-            morseOutput.textContent = morse;
+            window['morse-code-translator'].encode(text)
+                .then(morse => {
+                    morseOutput.textContent = morse;
+                })
+                .catch(error => {
+                    morseOutput.textContent = "转换出错: " + error.message;
+                });
         });
         
         // 解码功能
@@ -257,8 +303,13 @@
                 return;
             }
             
-            const text = window['morse-code-translator'].decode(morse);
-            textOutput.textContent = text;
+            window['morse-code-translator'].decode(morse)
+                .then(text => {
+                    textOutput.textContent = text;
+                })
+                .catch(error => {
+                    textOutput.textContent = "转换出错: " + error.message;
+                });
         });
         
         // 播放功能
