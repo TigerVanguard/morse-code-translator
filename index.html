@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>摩尔斯电码翻译器</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        
+        h2 {
+            color: #2980b9;
+            margin-top: 0;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            font-family: monospace;
+            margin-bottom: 10px;
+        }
+        
+        .output-box {
+            min-height: 50px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        button {
+            padding: 8px 15px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        
+        .options-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+        }
+        
+        .options-panel h3 {
+            margin-top: 0;
+            color: #34495e;
+        }
+        
+        .option-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .option-row label {
+            flex: 1;
+            margin-right: 10px;
+        }
+        
+        .option-row input, .option-row select {
+            width: 100px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        
+        @media (max-width: 600px) {
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>摩尔斯电码翻译器</h1>
+        
+        <div class="section">
+            <h2>文本转摩尔斯电码</h2>
+            <textarea id="textInput" rows="5" placeholder="输入文本..."></textarea>
+            <div class="btn-group">
+                <button id="encodeBtn">转换为摩尔斯电码</button>
+                <button id="playBtn">播放</button>
+                <button id="stopBtn" disabled>停止</button>
+                <button id="exportBtn">导出音频</button>
+            </div>
+            <div class="output-box" id="morseOutput"></div>
+            
+            <div class="options-panel">
+                <h3>音频选项</h3>
+                <div class="option-row">
+                    <label for="wpmInput">速度 (WPM):</label>
+                    <input type="number" id="wpmInput" value="15" min="5" max="50">
+                </div>
+                <div class="option-row">
+                    <label for="frequencyInput">频率 (Hz):</label>
+                    <input type="number" id="frequencyInput" value="600" min="200" max="1000">
+                </div>
+                <div class="option-row">
+                    <label for="volumeInput">音量:</label>
+                    <input type="range" id="volumeInput" value="80" min="0" max="100">
+                </div>
+                <div class="option-row">
+                    <label for="oscillatorType">音频类型:</label>
+                    <select id="oscillatorType">
+                        <option value="sine">正弦波</option>
+                        <option value="square">方波</option>
+                        <option value="sawtooth">锯齿波</option>
+                        <option value="triangle">三角波</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>摩尔斯电码转文本</h2>
+            <textarea id="morseInput" rows="5" placeholder="输入摩尔斯电码... (例如: .... . .-.. .-.. --- / .-- --- .-. .-.. -..)"></textarea>
+            <div class="btn-group">
+                <button id="decodeBtn">转换为文本</button>
+            </div>
+            <div class="output-box" id="textOutput"></div>
+        </div>
+        
+        <div class="section">
+            <h2>摩尔斯电码对照表</h2>
+            <div id="morseTable" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px;"></div>
+        </div>
+        
+        <footer>
+            <p>摩尔斯电码翻译器 &copy; 2023 | 支持多种语言字符集</p>
+        </footer>
+    </div>
+
+    <script src="src/index.js"></script>
+    <script>
+        // 获取DOM元素
+        const textInput = document.getElementById('textInput');
+        const morseInput = document.getElementById('morseInput');
+        const morseOutput = document.getElementById('morseOutput');
+        const textOutput = document.getElementById('textOutput');
+        const encodeBtn = document.getElementById('encodeBtn');
+        const decodeBtn = document.getElementById('decodeBtn');
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        const morseTable = document.getElementById('morseTable');
+        
+        // 获取选项元素
+        const wpmInput = document.getElementById('wpmInput');
+        const frequencyInput = document.getElementById('frequencyInput');
+        const volumeInput = document.getElementById('volumeInput');
+        const oscillatorType = document.getElementById('oscillatorType');
+        
+        let audioPlayer = null;
+        
+        // 获取选项 - 重命名函数以避免冲突
+        function getAudioOptions() {
+            return {
+                wpm: parseInt(wpmInput.value),
+                volume: parseInt(volumeInput.value),
+                oscillator: {
+                    type: oscillatorType.value,
+                    frequency: parseInt(frequencyInput.value)
+                }
+            };
+        }
+        
+        // 编码功能
+        encodeBtn.addEventListener('click', () => {
+            const text = textInput.value;
+            if (!text) {
+                morseOutput.textContent = "请输入要转换的文本";
+                return;
+            }
+            
+            const morse = window['morse-code-translator'].encode(text);
+            morseOutput.textContent = morse;
+        });
+        
+        // 解码功能
+        decodeBtn.addEventListener('click', () => {
+            const morse = morseInput.value;
+            if (!morse) {
+                textOutput.textContent = "请输入要转换的摩尔斯电码";
+                return;
+            }
+            
+            const text = window['morse-code-translator'].decode(morse);
+            textOutput.textContent = text;
+        });
+        
+        // 播放功能
+        playBtn.addEventListener('click', () => {
+            const text = textInput.value;
+            if (!text) {
+                alert("请先输入要播放的文本");
+                return;
+            }
+            
+            if (audioPlayer) {
+                audioPlayer.stop();
+            }
+            
+            const options = getAudioOptions(); // 使用重命名后的函数
+            audioPlayer = window['morse-code-translator'].audio(text, options);
+            
+            audioPlayer.oscillator.onended = () => {
+                stopBtn.disabled = true;
+                playBtn.disabled = false;
+            };
+            
+            audioPlayer.play();
+            playBtn.disabled = true;
+            stopBtn.disabled = false;
+        });
+        
+        // 停止播放
+        stopBtn.addEventListener('click', () => {
+            if (audioPlayer) {
+                audioPlayer.stop();
+                stopBtn.disabled = true;
+                playBtn.disabled = false;
+            }
+        });
+        
+        // 导出音频功能
+        exportBtn.addEventListener('click', () => {
+            const text = textInput.value;
+            if (!text) {
+                alert("请先输入要导出的文本");
+                return;
+            }
+            
+            const options = getAudioOptions(); // 使用重命名后的函数
+            const audioPlayer = window['morse-code-translator'].audio(text, options);
+            audioPlayer.exportWave('morse.wav');
+        });
+        
+        // 显示摩尔斯电码对照表
+        function displayMorseTable() {
+            const characters = window['morse-code-translator'].characters();
+            const latinChars = characters['1']; // 拉丁字母
+            const numbers = characters['2']; // 数字
+            const symbols = characters['3']; // 符号
+            
+            let tableHTML = '';
+            
+            // 添加字母
+            for (const char in latinChars) {
+                tableHTML += `<div><strong>${char}</strong>: ${latinChars[char]}</div>`;
+            }
+            
+            // 添加数字
+            for (const char in numbers) {
+                tableHTML += `<div><strong>${char}</strong>: ${numbers[char]}</div>`;
+            }
+            
+            // 添加常用符号
+            for (const char in symbols) {
+                if (['.', ',', '?', '!', '/', '(', ')', '=', '+', '-'].includes(char)) {
+                    tableHTML += `<div><strong>${char}</strong>: ${symbols[char]}</div>`;
+                }
+            }
+            
+            morseTable.innerHTML = tableHTML;
+        }
+        
+        // 页面加载完成后显示摩尔斯电码对照表
+        window.addEventListener('load', displayMorseTable);
+        
+        // 添加示例文本
+        textInput.placeholder = "输入文本... (例如: Hello World)";
+    </script>
+</body>
+</html>

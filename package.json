@@ -52,5 +52,8 @@
   },
   "engines": {
     "node": ">=4.0.0"
+  },
+  "dependencies": {
+    "@ozdemirburak/morse-code-translator": "^5.0.4"
   }
 }
